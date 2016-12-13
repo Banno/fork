@@ -1,5 +1,6 @@
 package com.shazam.fork.model;
 
+import com.android.ddmlib.testrunner.TestIdentifier;
 import com.google.common.base.Objects;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -8,11 +9,11 @@ public class TestCaseEventCounter {
 
     public static final TestCaseEventCounter EMPTY = new TestCaseEventCounter(null, 0);
 
-    private TestCaseEvent testCaseEvent;
+    private TestIdentifier testIdentifier;
     private AtomicInteger count;
 
-    public TestCaseEventCounter(TestCaseEvent testCaseEvent, int initialCount) {
-        this.testCaseEvent = testCaseEvent;
+    public TestCaseEventCounter(TestIdentifier testIdentifier, int initialCount) {
+        this.testIdentifier = testIdentifier;
         this.count = new AtomicInteger(initialCount);
     }
 
@@ -20,8 +21,8 @@ public class TestCaseEventCounter {
         return count.incrementAndGet();
     }
 
-    public TestCaseEvent getTestCaseEvent() {
-        return testCaseEvent;
+    public TestIdentifier getTestIdentifier() {
+        return testIdentifier;
     }
 
     public int getCount() {
@@ -35,7 +36,7 @@ public class TestCaseEventCounter {
 
     @Override
     public int hashCode() {
-        return testCaseEvent.hashCode();
+        return testIdentifier.hashCode();
     }
 
     @Override
@@ -43,6 +44,6 @@ public class TestCaseEventCounter {
         if (obj == null) return false;
         if (getClass() != obj.getClass()) return false;
         final TestCaseEventCounter other = (TestCaseEventCounter) obj;
-        return Objects.equal(this.testCaseEvent, other.testCaseEvent);
+        return Objects.equal(this.testIdentifier, other.testIdentifier);
     }
 }

@@ -73,8 +73,8 @@ public class Summary {
             return this;
         }
 
-        public Builder addIgnoredTest(String s) {
-            this.ignoredTests.add(s);
+        public Builder addIgnoredTests(List<String> ignoredTests) {
+            this.ignoredTests.addAll(ignoredTests);
             return this;
         }
 

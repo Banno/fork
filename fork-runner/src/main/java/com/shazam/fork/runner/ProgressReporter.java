@@ -10,6 +10,7 @@
 
 package com.shazam.fork.runner;
 
+import com.android.ddmlib.testrunner.TestIdentifier;
 import com.shazam.fork.model.Pool;
 import com.shazam.fork.model.TestCaseEvent;
 
@@ -34,9 +35,9 @@ public interface ProgressReporter {
 
     float getProgress();
 
-    boolean requestRetry(Pool pool, TestCaseEvent testCaseEvent);
+    boolean requestRetry(Pool pool, TestIdentifier testCaseEvent);
 
-    void recordFailedTestCase(Pool pool, TestCaseEvent testCase);
+    void recordFailedTestCase(Pool pool, TestIdentifier testCase);
 
-    int getTestFailuresCount(Pool pool, TestCaseEvent testCase);
+    int getTestFailuresCount(Pool pool, TestIdentifier testCase);
 }

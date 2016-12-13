@@ -1,48 +1,52 @@
 package com.shazam.fork.model;
 
-import com.android.ddmlib.testrunner.TestIdentifier;
 import com.google.common.base.Objects;
 
-import javax.annotation.Nonnull;
+import java.util.List;
 
 import static org.apache.commons.lang3.builder.ToStringBuilder.reflectionToString;
 import static org.apache.commons.lang3.builder.ToStringStyle.SIMPLE_STYLE;
 
 public class TestCaseEvent {
 
-    private final String testMethod;
+    private final List<String> testMethods;
+    private final List<String> ignoredMethods;
     private final String testClass;
-    private final boolean isIgnored;
+    private final boolean isClassIgnored;
 
-    private TestCaseEvent(String testMethod, String testClass, boolean isIgnored) {
-        this.testMethod = testMethod;
+    private TestCaseEvent(String testClass, List<String> testMethods, List<String> ignoredMethods, boolean isClassIgnored) {
+        this.testMethods = testMethods;
         this.testClass = testClass;
-        this.isIgnored = isIgnored;
+        this.ignoredMethods = ignoredMethods;
+        this.isClassIgnored = isClassIgnored;
     }
 
-    public static TestCaseEvent newTestCase(String testMethod, String testClass, boolean isIgnored) {
-        return new TestCaseEvent(testMethod, testClass, isIgnored);
+    public static TestCaseEvent newTestCase(String testClass,
+                                            boolean isClassIgnored,
+                                            List<String> testMethods,
+                                            List<String> ignoredMethods) {
+        return new TestCaseEvent(testClass, testMethods, ignoredMethods, isClassIgnored);
     }
 
-    public static TestCaseEvent newTestCase(@Nonnull TestIdentifier testIdentifier, boolean isIgnored) {
-        return new TestCaseEvent(testIdentifier.getTestName(), testIdentifier.getClassName(), isIgnored);
-    }
-
-    public String getTestMethod() {
-        return testMethod;
+    public List<String> getTestMethods() {
+        return testMethods;
     }
 
     public String getTestClass() {
         return testClass;
     }
 
-    public boolean isIgnored() {
-        return isIgnored;
+    public List<String> ignoredMethods() {
+        return ignoredMethods;
+    }
+
+    public boolean isClassIgnored() {
+        return isClassIgnored;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(this.testMethod, this.testClass);
+        return Objects.hashCode(this.testMethods, this.testClass, this.ignoredMethods, this.isClassIgnored);
     }
 
     @Override
@@ -54,7 +58,9 @@ public class TestCaseEvent {
             return false;
         }
         final TestCaseEvent other = (TestCaseEvent) obj;
-        return Objects.equal(this.testMethod, other.testMethod)
+        return Objects.equal(this.testMethods, other.testMethods)
+                && Objects.equal(this.isClassIgnored, other.isClassIgnored)
+                && Objects.equal(this.ignoredMethods, other.ignoredMethods)
                 && Objects.equal(this.testClass, other.testClass);
     }
 

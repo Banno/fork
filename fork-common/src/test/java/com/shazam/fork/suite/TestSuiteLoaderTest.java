@@ -19,15 +19,18 @@ import org.junit.Test;
 
 import java.io.File;
 import java.net.URL;
+import java.util.Collections;
+import java.util.List;
+import java.util.regex.Pattern;
 
 import javax.annotation.Nonnull;
 
 import static com.shazam.fork.io.FakeDexFileExtractor.fakeDexFileExtractor;
 import static com.shazam.fork.io.Files.convertFileToDexFile;
 import static com.shazam.fork.model.TestCaseEvent.newTestCase;
-import static com.shazam.fork.suite.FakeTestClassMatcher.fakeTestClassMatcher;
 import static com.shazam.shazamcrest.MatcherAssert.assertThat;
 import static com.shazam.shazamcrest.matcher.Matchers.sameBeanAs;
+import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 
 /**
@@ -66,7 +69,8 @@ public class TestSuiteLoaderTest {
     private static final File ANY_INSTRUMENTATION_APK_FILE = null;
 
     private final DexFileExtractor fakeDexFileExtractor = fakeDexFileExtractor().thatReturns(testDexFile());
-    private final TestClassMatcher fakeTestClassMatcher = fakeTestClassMatcher().thatAlwaysMatches();
+    private final TestClassMatcher fakeTestClassMatcher = new PackageAndClassNameMatcher(Pattern.compile("com.shazam.forktest"),
+                                                                                         Pattern.compile("^((?!Abstract).)*Test$"));
 
     private DexFile testDexFile() {
         URL testDexResourceUrl = this.getClass().getResource("/tests.dex");
@@ -81,17 +85,30 @@ public class TestSuiteLoaderTest {
         TestSuiteLoader testSuiteLoader = new TestSuiteLoader(ANY_INSTRUMENTATION_APK_FILE, fakeDexFileExtractor,
                 fakeTestClassMatcher);
 
+        System.out.println(testSuiteLoader.loadTestSuite());
+
         assertThat(testSuiteLoader.loadTestSuite(), containsInAnyOrder(
-                sameTestEventAs("com.shazam.forktest.IgnoredClassTest", "methodOfAnIgnoredTestClass", true),
-                sameTestEventAs("com.shazam.forktest.ClassWithNoIgnoredMethodsTest", "firstTestMethod", false),
-                sameTestEventAs("com.shazam.forktest.ClassWithNoIgnoredMethodsTest", "secondTestMethod", false),
-                sameTestEventAs("com.shazam.forktest.ClassWithSomeIgnoredMethodsTest", "nonIgnoredTestMethod", false),
-                sameTestEventAs("com.shazam.forktest.ClassWithSomeIgnoredMethodsTest", "ignoredTestMethod", true)
+                sameTestEventAs("com.shazam.forktest.IgnoredClassTest",
+                                true,
+                                asList("methodOfAnIgnoredTestClass"),
+                                Collections.emptyList()),
+                sameTestEventAs("com.shazam.forktest.ClassWithNoIgnoredMethodsTest",
+                                false,
+                                asList("firstTestMethod",
+                                       "secondTestMethod"),
+                                Collections.emptyList()),
+                sameTestEventAs("com.shazam.forktest.ClassWithSomeIgnoredMethodsTest",
+                                false,
+                                asList("nonIgnoredTestMethod"),
+                                asList("ignoredTestMethod"))
         ));
     }
 
     @Nonnull
-    private Matcher<TestCaseEvent> sameTestEventAs(String testClass, String testMethod, boolean isIgnored) {
-        return sameBeanAs(newTestCase(testMethod, testClass, isIgnored));
+    private Matcher<TestCaseEvent> sameTestEventAs(String testClass,
+                                                   boolean isIgnored,
+                                                   List<String> testMethods,
+                                                   List<String> ignoredTests) {
+        return sameBeanAs(newTestCase(testClass, isIgnored, testMethods, ignoredTests));
     }
 }

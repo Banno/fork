@@ -39,7 +39,7 @@ class LoggingPerformanceTestListener extends NoOpPerformanceTestListener {
         timings = new ArrayList<>();
         iteration = 0;
         iterationStartTime = 0;
-        logger.info("Starting test {} {}", testCaseEvent.getTestClass(), testCaseEvent.getTestMethod());
+        logger.info("Starting test {} {}", testCaseEvent.getTestClass(), testCaseEvent.getTestMethods());
     }
 
     @Override

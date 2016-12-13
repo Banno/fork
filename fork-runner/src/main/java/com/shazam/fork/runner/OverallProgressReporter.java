@@ -10,6 +10,7 @@
 
 package com.shazam.fork.runner;
 
+import com.android.ddmlib.testrunner.TestIdentifier;
 import com.shazam.fork.model.*;
 
 import org.slf4j.Logger;
@@ -91,7 +92,7 @@ public class OverallProgressReporter implements ProgressReporter {
         return progress / size;
     }
 
-    public boolean requestRetry(Pool pool, TestCaseEvent testCase) {
+    public boolean requestRetry(Pool pool, TestIdentifier testCase) {
         boolean result = retryWatchdog.requestRetry(failedTestCasesAccumulator.getCount(testCase));
         if (result && poolProgressTrackers.containsKey(pool)) {
             poolProgressTrackers.get(pool).trackTestEnqueuedAgain();
@@ -100,12 +101,12 @@ public class OverallProgressReporter implements ProgressReporter {
     }
 
     @Override
-    public void recordFailedTestCase(Pool pool, TestCaseEvent testCase) {
+    public void recordFailedTestCase(Pool pool, TestIdentifier testCase) {
         failedTestCasesAccumulator.record(pool, testCase);
     }
 
     @Override
-    public int getTestFailuresCount(Pool pool, TestCaseEvent testCase) {
+    public int getTestFailuresCount(Pool pool, TestIdentifier testCase) {
         return failedTestCasesAccumulator.getCount(pool, testCase);
     }
 

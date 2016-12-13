@@ -55,8 +55,7 @@ public class PerformanceTestRunner {
         RemoteAndroidTestRunner androidTestRunner = new RemoteAndroidTestRunner(instrumentationPackage, testRunner,
                 device.getDeviceInterface());
         String testClassName = testCaseEvent.getTestClass();
-        String testMethodName = testCaseEvent.getTestMethod();
-        androidTestRunner.setMethodName(testClassName, testMethodName);
+        androidTestRunner.setClassName(testClassName);
         androidTestRunner.setMaxtimeToOutputResponse(Defaults.ADB_MAX_TIME_TO_OUTPUT_RESPONSE);
         try {
             PerformanceTestListener performanceTestListener = new LoggingPerformanceTestListener(testCaseEvent, results);
@@ -75,7 +74,7 @@ public class PerformanceTestRunner {
         } catch (ShellCommandUnresponsiveException | TimeoutException e) {
             logger.warn("Test: " + testClassName + " got stuck. You can increase the timeout in settings if it's too strict");
         } catch (AdbCommandRejectedException | IOException e) {
-            throw new RuntimeException(format("Error while running test %s %s", testClassName, testMethodName), e);
+            throw new RuntimeException(format("Error while running test %s", testClassName), e);
         }
     }
 
