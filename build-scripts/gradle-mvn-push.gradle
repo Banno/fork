@@ -23,6 +23,9 @@ def getRepositoryPassword() {
     return hasProperty('NEXUS_PASSWORD') ? NEXUS_PASSWORD : ""
 }
 
+task assembleRelease(dependsOn: 'assemble') << {
+}
+
 uploadArchives {
     repositories {
         mavenDeployer {
