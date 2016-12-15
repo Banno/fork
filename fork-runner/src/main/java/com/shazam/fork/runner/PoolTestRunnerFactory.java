@@ -14,6 +14,7 @@ import com.shazam.fork.model.Pool;
 import com.shazam.fork.model.TestCaseEvent;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.concurrent.CountDownLatch;
 
@@ -29,7 +30,11 @@ public class PoolTestRunnerFactory {
                                          CountDownLatch poolCountDownLatch,
                                          ProgressReporter progressReporter) {
 
-        int totalTests = testCases.size();
+        int totalTests = (int) testCases.stream()
+                                   .map(TestCaseEvent::getTestMethods)
+                                   .flatMap(Collection::stream)
+                                   .count();
+
         progressReporter.addPoolProgress(pool, new PoolProgressTrackerImpl(totalTests));
 
         return new PoolTestRunner(

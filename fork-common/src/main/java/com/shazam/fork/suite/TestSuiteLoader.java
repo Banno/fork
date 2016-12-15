@@ -17,6 +17,7 @@ import org.jf.dexlib.*;
 
 import java.io.File;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 
@@ -26,7 +27,6 @@ import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
 public class TestSuiteLoader {
-    private static final String TEST_ANNOTATION = "Lorg/junit/Test;";
     private static final String IGNORE_ANNOTATION = "Lorg/junit/Ignore;";
 
     private final File instrumentationApkFile;
@@ -40,17 +40,20 @@ public class TestSuiteLoader {
     }
 
     public Collection<TestCaseEvent> loadTestSuite() throws NoTestCasesFoundException {
-        List<TestCaseEvent> testCaseEvents = dexFileExtractor.getDexFiles(instrumentationApkFile).stream()
-                .map(dexFile -> dexFile.ClassDefsSection.getItems())
-                .flatMap(Collection::stream)
-                .filter(c -> testClassMatcher.matchesPatterns(c.getClassType().getTypeDescriptor()))
-                .map(this::convertClassToTestCaseEvents)
-                .flatMap(Collection::stream)
-                .collect(toList());
+        List<TestCaseEvent> testCaseEvents
+                = dexFileExtractor.getDexFiles(instrumentationApkFile)
+                                  .stream()
+                                  .map(dexFile -> dexFile.ClassDefsSection.getItems())
+                                  .flatMap(Collection::stream)
+                                  .filter(c -> testClassMatcher.matchesPatterns(c.getClassType().getTypeDescriptor()))
+                                  .map(this::convertClassToTestCaseEvents)
+                                  .flatMap(Collection::stream)
+                                  .collect(toList());
 
         if (testCaseEvents.isEmpty()) {
             throw new NoTestCasesFoundException("No tests cases were found in the test APK: " + instrumentationApkFile.getAbsolutePath());
         }
+
         return testCaseEvents;
     }
 
@@ -61,25 +64,28 @@ public class TestSuiteLoader {
             return emptyList();
         }
 
-        List<TestCaseEvent> testCaseEvents = new ArrayList<>();
-        for (AnnotationDirectoryItem.MethodAnnotation method : annotationDirectoryItem.getMethodAnnotations()) {
-            asList(method.annotationSet.getAnnotations()).stream()
-                    .filter(annotation -> TEST_ANNOTATION.equals(stringType(annotation)))
-                    .map(annotation -> convertToTestCaseEvent(classDefItem, annotationDirectoryItem, method))
-                    .forEach(testCaseEvents::add);
-        }
-        return testCaseEvents;
+        return Collections.singletonList(convertToTestCaseEvent(classDefItem, annotationDirectoryItem));
     }
 
     @Nonnull
     private TestCaseEvent convertToTestCaseEvent(ClassDefItem classDefItem,
-                                                 AnnotationDirectoryItem annotationDirectoryItem,
-                                                 AnnotationDirectoryItem.MethodAnnotation method) {
-        String testMethod = method.method.getMethodName().getStringValue();
-        AnnotationItem[] annotations = method.annotationSet.getAnnotations();
-        String testClass = getClassName(classDefItem);
-        boolean ignored = isClassIgnored(annotationDirectoryItem) || isMethodIgnored(annotations);
-        return newTestCase(testMethod, testClass, ignored);
+                                                 AnnotationDirectoryItem annotationDirectoryItem) {
+        List<String> testMethods = annotationDirectoryItem.getMethodAnnotations()
+                .stream()
+                .filter(methodAnnotation -> !isMethodIgnored(methodAnnotation.annotationSet.getAnnotations()))
+                .map(methodAnnotation -> methodAnnotation.method.getMethodName().getStringValue())
+                .collect(Collectors.toList());
+
+        List<String> ignoredMethods = annotationDirectoryItem.getMethodAnnotations()
+                .stream()
+                .filter(methodAnnotation -> isMethodIgnored(methodAnnotation.annotationSet.getAnnotations()))
+                .map(methodAnnotation -> methodAnnotation.method.getMethodName().getStringValue())
+                .collect(Collectors.toList());
+
+        return newTestCase(getClassName(classDefItem), isClassIgnored(annotationDirectoryItem),
+                           testMethods,
+                           ignoredMethods
+        );
     }
 
     private String getClassName(ClassDefItem classDefItem) {

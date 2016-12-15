@@ -1,5 +1,6 @@
 package com.shazam.fork.runner;
 
+import com.android.ddmlib.testrunner.TestIdentifier;
 import com.shazam.fork.model.*;
 
 import org.jmock.Expectations;
@@ -24,7 +25,7 @@ public class OverallProgressReporterTest {
     private final Pool A_POOL = aDevicePool()
             .addDevice(A_DEVICE)
             .build();
-    private final TestCaseEvent A_TEST_CASE = newTestCase("aTestMethod", "aTestClass", false);
+    private final TestIdentifier A_TEST_CASE = new TestIdentifier("aTestClass", "aTestMethod");
 
     private OverallProgressReporter overallProgressReporter;
 

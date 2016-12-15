@@ -21,6 +21,7 @@ public class CoverageListener implements ITestRunListener {
     private final Pool pool;
     private final Logger logger = LoggerFactory.getLogger(CoverageListener.class);
     private final TestCaseEvent testCase;
+    private TestIdentifier currentTest;
 
     public CoverageListener(Device device, FileManager fileManager, Pool pool, TestCaseEvent testCase) {
         this.device = device;
@@ -35,6 +36,7 @@ public class CoverageListener implements ITestRunListener {
 
     @Override
     public void testStarted(TestIdentifier test) {
+        currentTest = test;
     }
 
     @Override
@@ -64,7 +66,7 @@ public class CoverageListener implements ITestRunListener {
     @Override
     public void testRunEnded(long elapsedTime, Map<String, String> runMetrics) {
         final String remoteFile = RemoteFileManager.getCoverageFileName(testCase.getTestClass());
-        final File file = fileManager.createFile(COVERAGE, pool, device, testCase);
+        final File file = fileManager.createFile(COVERAGE, pool, device, currentTest);
         try {
             device.getDeviceInterface().pullFile(remoteFile, file.getAbsolutePath());
         } catch (Exception e) {

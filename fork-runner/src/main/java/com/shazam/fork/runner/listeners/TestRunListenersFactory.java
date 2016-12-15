@@ -49,8 +49,7 @@ public class TestRunListenersFactory {
         return asList(
                 new ProgressTestRunListener(pool, progressReporter),
                 getForkXmlTestRunListener(fileManager, configuration.getOutput(), pool, device, testCase, progressReporter),
-                new ConsoleLoggingTestRunListener(configuration.getTestPackage(), device.getSerial(),
-                        device.getModelName(), progressReporter),
+                new ConsoleLoggingTestRunListener(configuration.getTestPackage(), device.getSerial(), device.getModelName(), progressReporter),
                 new LogCatTestRunListener(gson, fileManager, pool, device),
                 new SlowWarningTestRunListener(),
                 getScreenTraceTestRunListener(fileManager, pool, device),

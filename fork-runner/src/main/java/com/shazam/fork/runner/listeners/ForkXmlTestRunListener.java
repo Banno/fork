@@ -53,7 +53,7 @@ public class ForkXmlTestRunListener extends XmlTestRunListener {
 
     @Override
     protected File getResultFile(File reportDir) {
-        return fileManager.createFile(FileType.TEST, pool, device, testCase);
+        return fileManager.createFile(FileType.TEST, pool, device, test);
     }
 
     @Override
@@ -67,7 +67,7 @@ public class ForkXmlTestRunListener extends XmlTestRunListener {
         ImmutableMap.Builder<String, String> mapBuilder = ImmutableMap.<String, String>builder()
                 .putAll(super.getPropertiesAttributes());
         if (test != null) {
-            int testFailuresCount = progressReporter.getTestFailuresCount(pool, newTestCase(test, false));
+            int testFailuresCount = progressReporter.getTestFailuresCount(pool, test);
             if (testFailuresCount > 0) {
                 mapBuilder
                         .put(SUMMARY_KEY_TOTAL_FAILURE_COUNT, Integer.toString(testFailuresCount))

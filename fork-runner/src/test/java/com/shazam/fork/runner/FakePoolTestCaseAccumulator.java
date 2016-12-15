@@ -1,5 +1,6 @@
 package com.shazam.fork.runner;
 
+import com.android.ddmlib.testrunner.TestIdentifier;
 import com.shazam.fork.model.Pool;
 import com.shazam.fork.model.PoolTestCaseAccumulator;
 import com.shazam.fork.model.TestCaseEvent;
@@ -18,16 +19,16 @@ public class FakePoolTestCaseAccumulator implements PoolTestCaseAccumulator {
     }
 
     @Override
-    public void record(Pool pool, TestCaseEvent testCaseEvent) {
+    public void record(Pool pool, TestIdentifier testCaseEvent) {
     }
 
     @Override
-    public int getCount(Pool pool, TestCaseEvent testCaseEvent) {
+    public int getCount(Pool pool, TestIdentifier testCaseEvent) {
         return count;
     }
 
     @Override
-    public int getCount(TestCaseEvent testCaseEvent) {
+    public int getCount(TestIdentifier testCaseEvent) {
         return count;
     }
 }

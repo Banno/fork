@@ -23,7 +23,9 @@ import org.simpleframework.xml.core.Persister;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.shazam.fork.model.Device.Builder.aDevice;
 import static com.shazam.fork.summary.PoolSummary.Builder.aPoolSummary;
@@ -89,9 +91,11 @@ public class SummaryCompiler {
 
     private void addIgnoredTests(Collection<TestCaseEvent> testCases, Summary.Builder summaryBuilder) {
         for (TestCaseEvent testCase : testCases) {
-            if (testCase.isIgnored()) {
-                summaryBuilder.addIgnoredTest(testCase.getTestClass() + ":" + testCase.getTestMethod());
-            }
+            summaryBuilder.addIgnoredTests(testCase.ignoredMethods()
+                                                   .stream()
+                                                   .map(method -> String.format("%s:%s", testCase.getTestClass(), method))
+                                                   .collect(Collectors.toList()));
+
         }
     }
 

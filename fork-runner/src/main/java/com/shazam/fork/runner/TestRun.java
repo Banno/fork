@@ -44,13 +44,12 @@ class TestRun {
 
 		TestCaseEvent test = testRunParameters.getTest();
 		String testClassName = test.getTestClass();
-		String testMethodName = test.getTestMethod();
 		IRemoteAndroidTestRunner.TestSize testSize = testRunParameters.getTestSize();
 		if (testSize != null) {
 			runner.setTestSize(testSize);
 		}
 		runner.setRunName(poolName);
-		runner.setMethodName(testClassName, testMethodName);
+		runner.setClassName(testClassName);
 		runner.setMaxtimeToOutputResponse(testRunParameters.getTestOutputTimeout());
 
         if (testRunParameters.isCoverageEnabled()) {
@@ -63,7 +62,7 @@ class TestRun {
 		} catch (ShellCommandUnresponsiveException | TimeoutException e) {
 			logger.warn("Test: " + testClassName + " got stuck. You can increase the timeout in settings if it's too strict");
 		} catch (AdbCommandRejectedException | IOException e) {
-			throw new RuntimeException(format("Error while running test %s %s", test.getTestClass(), test.getTestMethod()), e);
+			throw new RuntimeException(format("Error while running test %s", test.getTestClass()), e);
 		}
 	}
 }

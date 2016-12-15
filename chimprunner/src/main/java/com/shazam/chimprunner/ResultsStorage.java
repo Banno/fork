@@ -50,7 +50,7 @@ public class ResultsStorage {
 
         for (Map.Entry<TestCaseEvent, Double> entry : results.entrySet()) {
             TestCaseEvent key = entry.getKey();
-            keys[i] = key.getTestClass() + "_" + key.getTestMethod();
+            keys[i] = key.getTestClass() + "_" + key.getTestMethods();
             values[i] = String.valueOf(entry.getValue());
             i++;
         }
