@@ -27,14 +27,6 @@ public class TestCaseEvent {
     public static TestCaseEvent newTestCase(String testClass,
                                             boolean isClassIgnored,
                                             List<String> testMethods,
-                                            List<String> ignoredMethods,
-                                            List<String> permissionsToRevoke) {
-        return new TestCaseEvent(testClass, testMethods, ignoredMethods, isClassIgnored, permissionsToRevoke);
-    }
-
-    public static TestCaseEvent newTestCase(String testClass,
-                                            boolean isClassIgnored,
-                                            List<String> testMethods,
                                             List<String> ignoredMethods) {
         return new TestCaseEvent(testClass, testMethods, ignoredMethods, isClassIgnored, emptyList());
     }
