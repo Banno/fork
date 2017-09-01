@@ -11,7 +11,9 @@ package com.shazam.fork.runner;
 
 import com.android.ddmlib.*;
 import com.android.ddmlib.testrunner.*;
+import com.google.common.base.Strings;
 import com.shazam.fork.model.TestCaseEvent;
+import com.shazam.fork.system.PermissionGrantingManager;
 import com.shazam.fork.system.io.RemoteFileManager;
 
 import org.slf4j.Logger;
@@ -20,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.List;
 
+import static com.shazam.fork.injector.ConfigurationInjector.configuration;
 import static java.lang.String.format;
 
 class TestRun {
@@ -27,13 +30,16 @@ class TestRun {
     private final String poolName;
 	private final TestRunParameters testRunParameters;
 	private final List<ITestRunListener> testRunListeners;
+	private final PermissionGrantingManager permissionGrantingManager;
 
-    public TestRun(String poolName,
+	public TestRun(String poolName,
 				   TestRunParameters testRunParameters,
-				   List<ITestRunListener> testRunListeners) {
+				   List<ITestRunListener> testRunListeners,
+				   PermissionGrantingManager permissionGrantingManager) {
         this.poolName = poolName;
 		this.testRunParameters = testRunParameters;
 		this.testRunListeners = testRunListeners;
+		this.permissionGrantingManager = permissionGrantingManager;
 	}
 
 	public void execute() {
@@ -56,6 +62,17 @@ class TestRun {
             runner.setCoverage(true);
             runner.addInstrumentationArg("coverageFile", RemoteFileManager.getCoverageFileName(testClassName));
         }
+		String excludedAnnotation = testRunParameters.getExcludedAnnotation();
+		if (!Strings.isNullOrEmpty(excludedAnnotation)) {
+			logger.info("Tests annotated with {} will be excluded", excludedAnnotation);
+			runner.addInstrumentationArg("notAnnotation", excludedAnnotation);
+		} else {
+			logger.info("No excluding any test based on annotations");
+		}
+
+		List<String> permissionsToRevoke = testRunParameters.getTest().getPermissionsToRevoke();
+
+		permissionGrantingManager.revokePermissions(testRunParameters.getApplicationPackage(), testRunParameters.getDeviceInterface(), permissionsToRevoke);
 
 		try {
 			runner.run(testRunListeners);
@@ -63,6 +80,9 @@ class TestRun {
 			logger.warn("Test: " + testClassName + " got stuck. You can increase the timeout in settings if it's too strict");
 		} catch (AdbCommandRejectedException | IOException e) {
 			throw new RuntimeException(format("Error while running test %s", test.getTestClass()), e);
+		} finally {
+			permissionGrantingManager.grantAllPermissionsIfAllowed(configuration(), testRunParameters.getApplicationPackage(), testRunParameters.getDeviceInterface());
 		}
-	}
+
+    }
 }

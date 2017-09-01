@@ -5,11 +5,7 @@ import com.android.ddmlib.testrunner.TestIdentifier;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Collections;
-
 import static com.shazam.fork.model.Device.Builder.aDevice;
-import static com.shazam.fork.model.TestCaseEvent.newTestCase;
-import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -31,7 +27,7 @@ public class PoolTestCaseAccumulatorTestFailure {
             .withName("another_pool")
             .addDevice(ANOTHER_DEVICE)
             .build();
-    
+
     private final TestIdentifier A_TEST_CASE = new TestIdentifier("a_class",
                                                                   "a_method");
     private final TestIdentifier ANOTHER_TEST_CASE = new TestIdentifier("a_class",
