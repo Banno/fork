@@ -27,22 +27,22 @@ There are two ways to run Fork with your builds.
 ### Gradle plugin (recommended)
 First, you need to add a build-script dependency. You can have access to snapshot builds, but stable versions are recommended.
 #### Stable
-```
+```gradle
 buildscript {
   dependencies {
-    classpath 'com.shazam.fork:fork-gradle-plugin:2.0.0'
+    classpath 'com.shazam.fork:fork-gradle-plugin:2.1.0'
   }
 }
 ```
 #### Snapshot
-```
+```gradle
 buildscript {
   repositories {
     // other repos ...
     maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
   }
   dependencies {
-    classpath 'com.shazam.fork:fork-gradle-plugin:2.1.0-SNAPSHOT'
+    classpath 'com.shazam.fork:fork-gradle-plugin:3.0.0-SNAPSHOT'
   }
 }
 ```
@@ -60,12 +60,22 @@ gradlew tasks | grep fork
 
 You can use Fork's DSL to configure its execution parameters. For a full list of the properties, have a look at: [**Configuring pools and runtime**](#configuring-pools-and-runtime) and related [**Examples**](#examples). It should be as easy as adding a block to your build.gradle:
 
-```groovy
+```gradle
 fork {
-    title "My Fork report"
-    isCoverageEnabled true
+    title = "My acceptance tests"
+    testPackage = "com.example.tests"
+    fallbackToScreenshots = true
+    poolingStrategy {
+        computed {
+            characteristic = "sw"
+            groups {
+                allDevices = 0
+            }
+        }
+    }
 }
 ```
+*Note*: The testPackage property refers to the base package name which your tests reside in.  If you have tests in multiple packages, provide the most common ancestor. 
 
 ### Standalone
 Check out the Fork project and execute:
@@ -103,6 +113,7 @@ totalAllowedRetryQuota | int                     | 0
 retryPerTestCaseQuota  | int                     | 1
 autoGrantPermissions   | boolean                 | true
 poolingStrategy        | PoolingStrategy         | -
+excludedAnnotation     | String                  | (tests with this annotation are excluded)
 
 `Poolingstrategy` is an object that describes how the device pools are created. You can choose **only one** strategy from below:
 
@@ -128,10 +139,10 @@ groups                 | Map&lt;String, Integer&gt; | map the name of a pool to 
 
 ## Examples
 
-###Gradle plugin examples
-####Automatic pooling
+### Gradle plugin examples
+#### Automatic pooling
 A common case can be that you want to create two pools, one for phones & small tablets (7" and below) and one for large tablets. You could add to your `build.gradle` file:
-```groovy
+```gradle
 fork {
     title "Fork report"
     subtitle "automatically split phones to large tablets"
@@ -148,8 +159,8 @@ fork {
 ```
 The above will run tests on 2 pools, one named "phablets" and another called "tablets". The smallest width for the first pool will be 0 and for the latter 720 dpi.
 
-####Manual pooling
-```groovy
+#### Manual pooling
+```gradle
 fork {
     title "Fork report"
     subtitle "manually allocated devices"
@@ -165,14 +176,14 @@ fork {
 ```
 That will create two pools named "phablets" & "tablets" with devices that have the respective serial numbers.
 
-###Standalone examples
-####Automatic pooling
+### Standalone examples
+#### Automatic pooling
 Execute the following:
 ```
 > gradlew fork-runner:run -Pargs='--apk /path/to/production.APK --test-apk /path/to/test.APK --config /path/to/fork-config.json'
 ```
 Where the contents of `fork-config.json` are:
-```
+```json
 {
 	"title" : "Fork Report",
 	"subtitle" : "automatically split phones to tablets",
@@ -188,13 +199,13 @@ Where the contents of `fork-config.json` are:
 }
 ```
 
-####Manual pooling
+#### Manual pooling
 Execute the following:
 ```
 > gradlew fork-runner:run -Pargs='--apk /path/to/production.APK --test-apk /path/to/test.APK --config /path/to/fork-config.json'
 ```
 Where the contents of `fork-config.json` are:
-```
+```json
 {
     "title" : "Fork Report",
     "subtitle" : "manually allocated devices",
@@ -206,6 +217,27 @@ Where the contents of `fork-config.json` are:
     }
 }
 ```
+
+## Runtime Permissions
+By default fork auto-grants all runtime permissions on Android Marshmallow +. It is possible anyway to selectively revoke one or more permissions per single test case.
+To do so, you have to add an annotation called `RevokePermission`. Here is an example:
+```java
+  @Test
+  @RevokePermission({Manifest.permission.RECORD_AUDIO,
+                        Manifest.permission.ACCESS_FINE_LOCATION})
+  public void aTestRevokingRecordAudioAndFineLocation() {
+    //in here RECORD_AUDIO and ACCESS_FINE_LOCATION are *not* granted.
+  }
+```
+
+Remember to add the fork client-side library to your project to have access to the annotation.
+To do so, in your app's dependencies add:
+```
+    androidTestImplementation "com.shazam.fork:fork-client:3.0.0-SNAPSHOT"
+```
+
+After every test case, all the runtime permissions will be automatically re-granted even if the test fails.
+This feature will impact only Marshmallow and subsequent devices.
 
 ## Limitations
  * The scheduling still works on a single build box with ADB, so there still is a limit by how many devices & emulators can be simultaneously connected to ADB. Eventually, Fork could be tweaked to talk over HTTP with other build agents, that would then be connected to devices over ADB. That model would tie in nicely with multi-agent CI systems, like Jenkins.
@@ -228,10 +260,10 @@ The Gradle plugin that allows the Reporter to run can be applied to a standalone
 Currently, the Reporter supports Jenkins but plugins can be written to be used with other CI servers.
 
 To be able to use the Flakiness Reporter add these dependencies:
-```
+```gradle
 buildscript {
     dependencies {
-        classpath "com.shazam.fork:fork-reporter-jenkins-gradle-plugin:2.1.0-SNAPSHOT"
+        classpath "com.shazam.fork:fork-reporter-jenkins-gradle-plugin:3.0.0-SNAPSHOT"
     }
     repositories {
         maven { url "http://repo.jenkins-ci.org/public/" }
@@ -260,7 +292,7 @@ jenkinsJobName         | String         |  The name of the job you want to be tr
 jenkinsReportTitle     | String         |  Optional, used to link to Fork diagnostics. [The report title you use to archive Fork's report folder](#publish-forks-html-report)
 
 An example of a configuration:
-```groovy
+```gradle
 forkJenkins {
     reportTitle = "My project's awesome flakiness report"
     jenkinsUrl = "http://my-jenkins.server.net:8080/"
@@ -285,11 +317,11 @@ This requires [Jenkins's HTML Publisher Plugin][2]. To be able to link to the ri
 # Chimprunner
 At the time of writing, not much is available around automated performance testing. Chimprunner is a very simple test runner that allows recording of somewhat accurate timings on test execution, from process creation to test finish. It all works on the Android instrumentation tests system that developers are familiar with.
 
-##How to setup
-```
+## How to setup
+```gradle
 buildscript {
     dependencies {
-        classpath 'com.shazam.chimprunner:chimprunner-gradle-plugin:0.9.0-SNAPSHOT'
+        classpath 'com.shazam.chimprunner:chimprunner-gradle-plugin:0.9.1-SNAPSHOT'
     }
 }
 ```
@@ -305,9 +337,9 @@ New tasks will have been added that allow you to run familiar instrumentation te
 gradlew tasks | grep chimprunner
 ```
 
-##Configuring Chimprunner
+## Configuring Chimprunner
 Configuring Chimprunner is simple. Add the following to your `build.gradle` file:
-```groovy
+```gradle
 chimprunner {
 	serial "0123456"
 	testPackage "com.example.performancetests"
@@ -323,11 +355,11 @@ ignoreFailures         | boolean       | false                              | wh
 testClassRegex         | String        | "^((?!Abstract).)*Test$"           | classes that will be searched for tests
 \* testPackage         | String        | (Your instrumentation APK package) | the package where the performance tests are located  
 
-##Current reports
+## Current reports
 Currently, Chimprunner produces a `timings.csv` file in the output folder with all the timings of tests that were executed as part of the performance tests and the average time they took after running a number of iterations. That CSV file can be then used for plotting by other tools. Using the Jenkins Plot plugin we can now produce historic diagrams of our startup time like the following diagram:
 ![Chimprunner timing plot](static/performance-plot.png)
 
-##Future work
+## Future work
 We would like to add ways of automatically launching Android performance tools & reports developers know and use already, with no or minimal code changes. We will investigate around how to provide systrace, CPU, GPU & memory usage reports. The library will probably provide some annotations that will enable various performance tools. An example could be:
 ```java
 @Test
@@ -345,7 +377,7 @@ public void startUpSpeed() {
 ```
 The system could then provide a systrace & GPU profiling reports for the duration of the `trackListScroll()` test.
 
-#License
+# License
 
     Copyright 2016 Shazam Entertainment Limited.
 

@@ -1,7 +1,8 @@
 package com.shazam.fork.runner;
 
 import com.android.ddmlib.testrunner.TestIdentifier;
-import com.shazam.fork.model.*;
+import com.shazam.fork.model.Device;
+import com.shazam.fork.model.Pool;
 
 import org.jmock.Expectations;
 import org.jmock.auto.Mock;
@@ -11,7 +12,6 @@ import org.junit.Test;
 
 import static com.shazam.fork.model.Device.Builder.aDevice;
 import static com.shazam.fork.model.Pool.Builder.aDevicePool;
-import static com.shazam.fork.model.TestCaseEvent.newTestCase;
 import static com.shazam.fork.runner.FakePoolTestCaseAccumulator.aFakePoolTestCaseAccumulator;
 import static com.shazam.fork.runner.FakeProgressReporterTrackers.aFakeProgressReporterTrackers;
 
