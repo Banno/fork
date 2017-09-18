@@ -13,6 +13,8 @@
 package com.shazam.fork;
 
 import com.android.ddmlib.testrunner.IRemoteAndroidTestRunner;
+import com.shazam.fork.system.axmlparser.ApplicationInfo;
+import com.shazam.fork.system.axmlparser.ApplicationInfoFactory;
 import com.shazam.fork.system.axmlparser.InstrumentationInfo;
 
 import org.slf4j.Logger;
@@ -28,7 +30,7 @@ import javax.annotation.Nullable;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.shazam.fork.system.axmlparser.InstumentationInfoFactory.parseFromFile;
+import static com.shazam.fork.system.axmlparser.InstrumentationInfoFactory.parseFromFile;
 import static java.util.Arrays.asList;
 
 public class Configuration {
@@ -54,6 +56,9 @@ public class Configuration {
     private final boolean isCoverageEnabled;
     private final PoolingStrategy poolingStrategy;
     private final boolean autoGrantPermissions;
+    private final String excludedAnnotation;
+
+    private ApplicationInfo applicationInfo;
 
     private Configuration(Builder builder) {
         androidSdk = builder.androidSdk;
@@ -76,6 +81,8 @@ public class Configuration {
         isCoverageEnabled = builder.isCoverageEnabled;
         poolingStrategy = builder.poolingStrategy;
         autoGrantPermissions = builder.autoGrantPermissions;
+        this.excludedAnnotation = builder.excludedAnnotation;
+        this.applicationInfo = builder.applicationInfo;
     }
 
     @Nonnull
@@ -171,6 +178,14 @@ public class Configuration {
         return autoGrantPermissions;
     }
 
+    public String getExcludedAnnotation() {
+        return excludedAnnotation;
+    }
+
+    public ApplicationInfo getApplicationInfo() {
+        return applicationInfo;
+    }
+
     public static class Builder {
         private File androidSdk;
         private File applicationApk;
@@ -192,6 +207,8 @@ public class Configuration {
         private boolean isCoverageEnabled;
         private PoolingStrategy poolingStrategy;
         private boolean autoGrantPermissions;
+        private String excludedAnnotation;
+        private ApplicationInfo applicationInfo;
 
         public static Builder configuration() {
             return new Builder();
@@ -282,6 +299,11 @@ public class Configuration {
             return this;
         }
 
+        public Builder withExcludedAnnotation(String excludedAnnotation) {
+            this.excludedAnnotation = excludedAnnotation;
+            return this;
+        }
+
         public Configuration build() {
             checkNotNull(androidSdk, "SDK is required.");
             checkArgument(androidSdk.exists(), "SDK directory does not exist.");
@@ -301,7 +323,7 @@ public class Configuration {
             title = assignValueOrDefaultIfNull(title, Defaults.TITLE);
             subtitle = assignValueOrDefaultIfNull(subtitle, Defaults.SUBTITLE);
             testClassRegex = assignValueOrDefaultIfNull(testClassRegex, CommonDefaults.TEST_CLASS_REGEX);
-            testPackage = assignValueOrDefaultIfNull(testPackage, instrumentationInfo.getInstrumentationPackage());
+            testPackage = assignValueOrDefaultIfNull(testPackage, instrumentationInfo.getApplicationPackage());
             testOutputTimeout = assignValueOrDefaultIfZero(testOutputTimeout, Defaults.TEST_OUTPUT_TIMEOUT_MILLIS);
             excludedSerials = assignValueOrDefaultIfNull(excludedSerials, Collections.<String>emptyList());
             checkArgument(totalAllowedRetryQuota >= 0, "Total allowed retry quota should not be negative.");
@@ -309,6 +331,7 @@ public class Configuration {
             retryPerTestCaseQuota = assignValueOrDefaultIfZero(retryPerTestCaseQuota, Defaults.RETRY_QUOTA_PER_TEST_CASE);
             logArgumentsBadInteractions();
             poolingStrategy = validatePoolingStrategy(poolingStrategy);
+            applicationInfo = ApplicationInfoFactory.parseFromFile(applicationApk);
             return new Configuration(this);
         }
 
