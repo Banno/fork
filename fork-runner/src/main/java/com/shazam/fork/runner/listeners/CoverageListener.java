@@ -65,7 +65,7 @@ public class CoverageListener implements ITestRunListener {
 
     @Override
     public void testRunEnded(long elapsedTime, Map<String, String> runMetrics) {
-        final String remoteFile = RemoteFileManager.getCoverageFileName(currentTest);
+        final String remoteFile = RemoteFileManager.getCoverageFileName(testCase.getTestClass());
         final File file = fileManager.createFile(COVERAGE, pool, device, currentTest);
         try {
             device.getDeviceInterface().pullFile(remoteFile, file.getAbsolutePath());

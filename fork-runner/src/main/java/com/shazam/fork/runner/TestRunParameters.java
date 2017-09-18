@@ -26,8 +26,6 @@ public class TestRunParameters {
 	private final IRemoteAndroidTestRunner.TestSize testSize;
 	private final int testOutputTimeout;
 	private final IDevice deviceInterface;
-	private final String excludedAnnotation;
-	private final String applicationPackage;
 
 	public TestCaseEvent getTest() {
 		return test;
@@ -58,14 +56,6 @@ public class TestRunParameters {
 		return isCoverageEnabled;
 	}
 
-	public String getExcludedAnnotation() {
-		return excludedAnnotation;
-	}
-
-	public String getApplicationPackage() {
-		return applicationPackage;
-	}
-
 	public static class Builder {
 		private TestCaseEvent test;
 		private String testPackage;
@@ -74,8 +64,6 @@ public class TestRunParameters {
 		private IRemoteAndroidTestRunner.TestSize testSize;
 		private IDevice deviceInterface;
 		private int testOutputTimeout;
-		private String excludedAnnotation;
-		private String applicationPackage;
 
 		public static Builder testRunParameters() {
 			return new Builder();
@@ -116,16 +104,6 @@ public class TestRunParameters {
 			return this;
 		}
 
-		public Builder withExcludedAnnotation(String excludedAnnotation) {
-			this.excludedAnnotation = excludedAnnotation;
-			return this;
-		}
-
-		public Builder withApplicationPackage(String applicationPackage) {
-			this.applicationPackage = applicationPackage;
-			return this;
-		}
-
 		public TestRunParameters build() {
 			return new TestRunParameters(this);
 		}
@@ -139,7 +117,5 @@ public class TestRunParameters {
 		testOutputTimeout = builder.testOutputTimeout;
 		deviceInterface = builder.deviceInterface;
 		isCoverageEnabled = builder.isCoverageEnabled;
-		this.excludedAnnotation = builder.excludedAnnotation;
-		this.applicationPackage = builder.applicationPackage;
 	}
 }
