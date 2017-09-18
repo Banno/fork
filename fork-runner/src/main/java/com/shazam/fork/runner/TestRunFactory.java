@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Queue;
 
 import static com.shazam.fork.runner.TestRunParameters.Builder.testRunParameters;
-import static com.shazam.fork.system.PermissionGrantingManager.permissionGrantingManager;
 
 public class TestRunFactory {
 
@@ -40,12 +39,10 @@ public class TestRunFactory {
                 .withDeviceInterface(device.getDeviceInterface())
                 .withTest(testCase)
                 .withTestPackage(configuration.getInstrumentationPackage())
-                .withApplicationPackage(configuration.getApplicationPackage())
                 .withTestRunner(configuration.getTestRunnerClass())
                 .withTestSize(configuration.getTestSize())
                 .withTestOutputTimeout((int) configuration.getTestOutputTimeout())
                 .withCoverageEnabled(configuration.isCoverageEnabled())
-                .withExcludedAnnotation(configuration.getExcludedAnnotation())
                 .build();
 
         List<ITestRunListener> testRunListeners = testRunListenersFactory.createTestListeners(
@@ -58,7 +55,6 @@ public class TestRunFactory {
         return new TestRun(
                 pool.getName(),
                 testRunParameters,
-                testRunListeners,
-                permissionGrantingManager());
+                testRunListeners);
     }
 }

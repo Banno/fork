@@ -90,7 +90,7 @@ public class TestSuiteLoaderTest {
         assertThat(testSuiteLoader.loadTestSuite(), containsInAnyOrder(
                 sameTestEventAs("com.shazam.forktest.IgnoredClassTest",
                                 true,
-                                Collections.singletonList("methodOfAnIgnoredTestClass"),
+                                asList("methodOfAnIgnoredTestClass"),
                                 Collections.emptyList()),
                 sameTestEventAs("com.shazam.forktest.ClassWithNoIgnoredMethodsTest",
                                 false,
@@ -99,13 +99,8 @@ public class TestSuiteLoaderTest {
                                 Collections.emptyList()),
                 sameTestEventAs("com.shazam.forktest.ClassWithSomeIgnoredMethodsTest",
                                 false,
-                                Collections.singletonList("nonIgnoredTestMethod"),
-                                Collections.singletonList("ignoredTestMethod")),
-                sameTestEventAs("com.shazam.forktest.RevokePermissionsClassTest",
-                                false,
-                                asList("methodAnnotatedWithEmptyRevokePermissionsTest",
-                                       "methodAnnotatedWithRevokePermissionsTest"),
-                                Collections.emptyList())
+                                asList("nonIgnoredTestMethod"),
+                                asList("ignoredTestMethod"))
         ));
     }
 

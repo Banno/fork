@@ -94,11 +94,6 @@ public class ForkConfiguration {
      */
     public boolean autoGrantPermissions = true;
 
-    /**
-     * Filter test run to tests without given annotation
-     */
-    public String excludedAnnotation;
-
     public void poolingStrategy(Closure<?> poolingStrategyClosure) {
         poolingStrategy = new PoolingStrategy();
         poolingStrategyClosure.setDelegate(poolingStrategy);
