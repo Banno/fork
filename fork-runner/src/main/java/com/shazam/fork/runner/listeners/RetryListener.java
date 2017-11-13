@@ -28,7 +28,6 @@ import java.util.Queue;
 import javax.annotation.Nonnull;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.shazam.fork.model.TestCaseEvent.newTestCase;
 
 public class RetryListener extends NoOpITestRunListener {
 
@@ -62,7 +61,7 @@ public class RetryListener extends NoOpITestRunListener {
         this.pool = pool;
         this.fileManager = fileManager;
     }
-    
+
     @Override
     public void testFailed(TestIdentifier test, String trace) {
         failedTest = test;
@@ -83,10 +82,10 @@ public class RetryListener extends NoOpITestRunListener {
         }
     }
 
-    public void removeFailureTraceFiles( ) {
+    public void removeFailureTraceFiles() {
         final File file = fileManager.getFile(FileType.TEST, pool.getName(), device.getSafeSerial(), failedTest);
         boolean deleted = file.delete();
-        if(!deleted){
+        if (!deleted) {
             logger.warn("Failed to remove file  " + file.getAbsoluteFile() + " for a failed but enqueued again test");
         }
     }
