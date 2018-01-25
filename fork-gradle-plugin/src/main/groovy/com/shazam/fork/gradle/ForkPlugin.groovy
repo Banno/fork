@@ -19,7 +19,7 @@ import com.android.build.gradle.api.ApkVariant
 import com.android.build.gradle.api.ApkVariantOutput
 import com.android.build.gradle.api.BaseVariant
 import com.android.build.gradle.api.TestVariant
-import com.shazam.fork.ForkConfiguration
+import com.shazam.fork.ForkConfigurationExtension
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaBasePlugin
@@ -40,8 +40,8 @@ class ForkPlugin implements Plugin<Project> {
             throw new IllegalStateException("Android plugin is not found")
         }
 
-        if (project.extensions.findByType(ForkConfiguration) == null) {
-            project.extensions.add "fork", ForkConfiguration
+        if (project.extensions.findByType(ForkConfigurationExtension) == null) {
+            project.extensions.add "fork", ForkConfigurationExtension
         }
 
         def forkTask = project.tasks.register(TASK_PREFIX) {
@@ -64,7 +64,7 @@ class ForkPlugin implements Plugin<Project> {
             ApkVariant testedVariant = variant.testedVariant
             checkTestedVariants(testedVariant)
 
-            ForkConfiguration config = project.fork
+            ForkConfigurationExtension config = project.fork
 
             description = "Runs instrumentation tests on all the connected devices for '${variant.name}' variation and generates a report with screenshots"
             group = JavaBasePlugin.VERIFICATION_GROUP

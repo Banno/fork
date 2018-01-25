@@ -13,7 +13,7 @@
 package com.shazam.fork.summary;
 
 import com.google.common.collect.Lists;
-import com.shazam.fork.Configuration;
+import com.shazam.fork.ForkConfiguration;
 import com.shazam.fork.model.*;
 import com.shazam.fork.runner.PoolTestRunner;
 import com.shazam.fork.system.io.FileManager;
@@ -36,11 +36,11 @@ public class SummaryCompiler {
 
     private static final boolean STRICT = false;
 
-    private final Configuration configuration;
+    private final ForkConfiguration configuration;
     private final FileManager fileManager;
     private final Serializer serializer;
 
-    public SummaryCompiler(Configuration configuration, FileManager fileManager) {
+    public SummaryCompiler(ForkConfiguration configuration, FileManager fileManager) {
         this.configuration = configuration;
         this.fileManager = fileManager;
         serializer = new Persister();
