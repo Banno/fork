@@ -1,0 +1,1 @@
+library('android-shared').publishForkedProject()
