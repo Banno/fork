@@ -36,7 +36,15 @@ allprojects {
 }
 
 subprojects {
+    ext {
+        SNAPSHOT_REPOSITORY_URL = System.env.NEXUS_REPOSITORY
+        NEXUS_USERNAME = System.env.NEXUS_USER
+        NEXUS_PASSWORD = System.env.NEXUS_PASSWORD
+    }
+
     afterEvaluate { project ->
+        task assembleRelease(dependsOn: 'assemble')
+
         jacocoTestReport.dependsOn test
         jacocoTestReport.reports.html.enabled false
         jacocoTestReport.reports.xml.enabled true
