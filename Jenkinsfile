@@ -1,1 +1,2 @@
-library('android-shared').publishForkedProject()
+library('android-shared')
+publishForkedProject()
