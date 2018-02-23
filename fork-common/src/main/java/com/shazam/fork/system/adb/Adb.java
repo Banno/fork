@@ -23,11 +23,16 @@ import java.util.Collection;
  * @see "com.android.builder.testing.ConnectedDeviceProvider"
  */
 public class Adb {
-    private final AndroidDebugBridge bridge;
+    private final File adbPath;
+    private AndroidDebugBridge bridge;
 
     public Adb(File sdk) {
+        adbPath = FileUtils.getFile(sdk, "platform-tools", "adb");
+        initialize();
+    }
+
+    public void initialize() {
         AndroidDebugBridge.initIfNeeded(false /*clientSupport*/);
-        File adbPath = FileUtils.getFile(sdk, "platform-tools", "adb");
         bridge = AndroidDebugBridge.createBridge(adbPath.getAbsolutePath(), false /*forceNewBridge*/);
         long timeOut = 30000; // 30 sec
         int sleepTime = 1000;
@@ -47,6 +52,7 @@ public class Adb {
 
     public void terminate() {
         AndroidDebugBridge.terminate();
+        AndroidDebugBridge.disconnectBridge();
     }
 
     private void sleep(int sleepTime) {

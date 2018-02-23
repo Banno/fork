@@ -62,6 +62,7 @@ public class ChimpRunner {
     public boolean run() {
         long startOfTestsMs = nanoTime();
         try {
+            adb.initialize();
             prepareOutputDirectory();
             DdmPreferences.setTimeOut(Defaults.DDMS_TIMEOUT);
             Device device = deviceLoader.loadDevice(serial);
