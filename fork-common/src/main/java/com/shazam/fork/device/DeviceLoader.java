@@ -68,6 +68,7 @@ public class DeviceLoader {
      * @return a list of connected devices
      */
     private List<IDevice> loadAllDevices() {
+        adb.initialize();
         List<IDevice> devices = new ArrayList<>();
         for (IDevice device : adb.getDevices()) {
             String serialNumber = device.getSerialNumber();
