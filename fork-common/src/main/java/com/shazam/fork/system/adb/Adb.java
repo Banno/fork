@@ -52,6 +52,7 @@ public class Adb {
 
     public void terminate() {
         AndroidDebugBridge.terminate();
+        AndroidDebugBridge.disconnectBridge();
     }
 
     private void sleep(int sleepTime) {
