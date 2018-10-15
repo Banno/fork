@@ -1,43 +1,19 @@
 apply plugin: 'maven'
 apply plugin: 'signing'
 
-def isReleaseBuild() {
-    return VERSION_NAME.contains("SNAPSHOT") == false
-}
-
-def getReleaseRepositoryUrl() {
-    return hasProperty('RELEASE_REPOSITORY_URL') ? RELEASE_REPOSITORY_URL
-            : "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
-}
-
-def getSnapshotRepositoryUrl() {
-    return hasProperty('SNAPSHOT_REPOSITORY_URL') ? SNAPSHOT_REPOSITORY_URL
-            : "https://oss.sonatype.org/content/repositories/snapshots/"
-}
-
-def getRepositoryUsername() {
-    return hasProperty('NEXUS_USERNAME') ? NEXUS_USERNAME : ""
-}
-
-def getRepositoryPassword() {
-    return hasProperty('NEXUS_PASSWORD') ? NEXUS_PASSWORD : ""
-}
-
 uploadArchives {
     repositories {
         mavenDeployer {
-            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
-
-            pom.groupId = GROUP
+            pom.groupId = project.group
             pom.artifactId = POM_ARTIFACT_ID
-            pom.version = VERSION_NAME
+            pom.version = project.version
 
-            repository(url: getReleaseRepositoryUrl()) {
-                authentication(userName: getRepositoryUsername(), password: getRepositoryPassword())
+            repository(url: 'http://nexus.banno.com/nexus/content/repositories/android-libraries') {
+                authentication(userName: System.env.NEXUS_USER, password: System.env.NEXUS_PASSWORD)
             }
 
-            snapshotRepository(url: getSnapshotRepositoryUrl()) {
-                authentication(userName: getRepositoryUsername(), password: getRepositoryPassword())
+            snapshotRepository(url: 'http://nexus.banno.com/nexus/content/repositories/android-libraries') {
+                authentication(userName: System.env.NEXUS_USER, password: System.env.NEXUS_PASSWORD)
             }
 
             pom.project {
@@ -71,11 +47,6 @@ uploadArchives {
     }
 }
 
-signing {
-    required { isReleaseBuild() && gradle.taskGraph.hasTask("uploadArchives") }
-    sign configurations.archives
-}
-
 task javadocJar(type: Jar) {
     classifier = 'javadoc'
     from javadoc
@@ -93,9 +64,9 @@ artifacts {
 install {
     repositories {
         mavenInstaller {
-            pom.groupId = GROUP
+            pom.groupId = project.group
             pom.artifactId = POM_ARTIFACT_ID
-            pom.version = VERSION_NAME
+            pom.version = project.version
         }
     }
 }
