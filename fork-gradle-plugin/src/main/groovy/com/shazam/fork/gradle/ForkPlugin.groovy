@@ -15,7 +15,9 @@ package com.shazam.fork.gradle
 import com.android.build.gradle.AppPlugin
 import com.android.build.gradle.BaseExtension
 import com.android.build.gradle.LibraryPlugin
-import com.android.build.gradle.api.BaseVariantOutput
+import com.android.build.gradle.api.ApkVariant
+import com.android.build.gradle.api.ApkVariantOutput
+import com.android.build.gradle.api.BaseVariant
 import com.android.build.gradle.api.TestVariant
 import com.shazam.fork.ForkConfigurationExtension
 import org.gradle.api.Plugin
@@ -54,18 +56,21 @@ class ForkPlugin implements Plugin<Project> {
     private static ForkRunTask createTask(final TestVariant variant, final Project project) {
         checkTestVariants(variant)
 
+        ApkVariant testedVariant = variant.testedVariant
+
+        checkTestedVariants(testedVariant)
+
         def forkTask = project.tasks.create("${TASK_PREFIX}${variant.name.capitalize()}", ForkRunTask)
 
-        variant.testedVariant.outputs.all { BaseVariantOutput baseVariantOutput ->
-            checkTestedVariants(baseVariantOutput)
+        testedVariant.outputs.all { ApkVariantOutput testedVariantOutput ->
             forkTask.configure {
                 ForkConfigurationExtension config = project.fork
 
                 description = "Runs instrumentation tests on all the connected devices for '${variant.name}' variation and generates a report with screenshots"
                 group = JavaBasePlugin.VERIFICATION_GROUP
 
-                def firstOutput = variant.outputs.asList().first()
-                instrumentationApk = new File(firstOutput.packageApplication.outputDirectory.path + "/" + firstOutput.outputFileName)
+                ApkVariantOutput variantOutput = variant.outputs.asList().first()
+                instrumentationApk = new File(variant.packageApplicationProvider.get().outputDirectory.path + "/" + variantOutput.outputFileName)
 
                 title = config.title
                 subtitle = config.subtitle
@@ -83,7 +88,7 @@ class ForkPlugin implements Plugin<Project> {
                 ignoreFailures = config.ignoreFailures
                 excludedAnnotation = config.excludedAnnotation
 
-                applicationApk = new File(baseVariantOutput.packageApplication.outputDirectory.path + "/" + baseVariantOutput.outputFileName)
+                applicationApk = new File(testedVariant.packageApplicationProvider.get().outputDirectory.path + "/" + testedVariantOutput.outputFileName)
 
                 String baseOutputDir = config.baseOutputDir
                 File outputBase
@@ -94,10 +99,12 @@ class ForkPlugin implements Plugin<Project> {
                 }
                 output = new File(outputBase, variant.name)
 
-                dependsOn variant.testedVariant.assemble, variant.assemble
+                dependsOn testedVariant.assembleProvider, variant.assembleProvider
+
+                outputs.upToDateWhen { false }
             }
-            forkTask.outputs.upToDateWhen { false }
         }
+
         return forkTask
     }
 
@@ -113,8 +120,8 @@ class ForkPlugin implements Plugin<Project> {
      *
      * @param baseVariant the tested variant
      */
-    private static checkTestedVariants(BaseVariantOutput baseVariantOutput) {
-        if (baseVariantOutput.outputs.size() > 1) {
+    private static checkTestedVariants(BaseVariant baseVariant) {
+        if (baseVariant.outputs.size() > 1) {
             throw new UnsupportedOperationException(
                     "The Fork plugin does not support abi splits for app APKs, but supports testing via a universal APK. " +
                             "Add the flag \"universalApk true\" in the android.splits.abi configuration."
