@@ -23,6 +23,7 @@ import com.shazam.fork.ForkConfigurationExtension
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaBasePlugin
+import org.gradle.api.tasks.TaskProvider
 
 /**
  * Gradle plugin for Fork.
@@ -41,71 +42,66 @@ class ForkPlugin implements Plugin<Project> {
 
         project.extensions.add "fork", ForkConfigurationExtension
 
-        def forkTask = project.task(TASK_PREFIX) {
+        def forkTask = project.tasks.register(TASK_PREFIX) {
             group = JavaBasePlugin.VERIFICATION_GROUP
             description = "Runs all the instrumentation test variations on all the connected devices"
         }
 
         BaseExtension android = project.android
         android.testVariants.all { TestVariant variant ->
-            ForkRunTask forkTaskForTestVariant = createTask(variant, project)
-            forkTask.dependsOn forkTaskForTestVariant
+            def forkTaskForTestVariant = registerTask(variant, project)
+            forkTask.configure {
+                dependsOn forkTaskForTestVariant
+            }
         }
     }
 
-    private static ForkRunTask createTask(final TestVariant variant, final Project project) {
-        checkTestVariants(variant)
+    private static TaskProvider<ForkRunTask> registerTask(final TestVariant variant, final Project project) {
+        return project.tasks.register("${TASK_PREFIX}${variant.name.capitalize()}", ForkRunTask) {
+            checkTestVariants(variant)
+            ApkVariant testedVariant = variant.testedVariant
+            checkTestedVariants(testedVariant)
 
-        ApkVariant testedVariant = variant.testedVariant
+            ForkConfigurationExtension config = project.fork
 
-        checkTestedVariants(testedVariant)
+            description = "Runs instrumentation tests on all the connected devices for '${variant.name}' variation and generates a report with screenshots"
+            group = JavaBasePlugin.VERIFICATION_GROUP
 
-        def forkTask = project.tasks.create("${TASK_PREFIX}${variant.name.capitalize()}", ForkRunTask)
+            ApkVariantOutput variantOutput = variant.outputs.asList().first()
+            instrumentationApk = new File(variant.packageApplicationProvider.get().outputDirectory.path + "/" + variantOutput.outputFileName)
 
-        testedVariant.outputs.all { ApkVariantOutput testedVariantOutput ->
-            forkTask.configure {
-                ForkConfigurationExtension config = project.fork
+            title = config.title
+            subtitle = config.subtitle
+            testClassRegex = config.testClassRegex
+            testPackage = config.testPackage
+            testOutputTimeout = config.testOutputTimeout
+            testSize = config.testSize
+            excludedSerials = config.excludedSerials
+            fallbackToScreenshots = config.fallbackToScreenshots
+            totalAllowedRetryQuota = config.totalAllowedRetryQuota
+            retryPerTestCaseQuota = config.retryPerTestCaseQuota
+            isCoverageEnabled = config.isCoverageEnabled
+            poolingStrategy = config.poolingStrategy
+            autoGrantPermissions = config.autoGrantPermissions
+            ignoreFailures = config.ignoreFailures
+            excludedAnnotation = config.excludedAnnotation
 
-                description = "Runs instrumentation tests on all the connected devices for '${variant.name}' variation and generates a report with screenshots"
-                group = JavaBasePlugin.VERIFICATION_GROUP
+            ApkVariantOutput testedVariantOutput = testedVariant.outputs.first()
+            applicationApk = new File(testedVariant.packageApplicationProvider.get().outputDirectory.path + "/" + testedVariantOutput.outputFileName)
 
-                ApkVariantOutput variantOutput = variant.outputs.asList().first()
-                instrumentationApk = new File(variant.packageApplicationProvider.get().outputDirectory.path + "/" + variantOutput.outputFileName)
-
-                title = config.title
-                subtitle = config.subtitle
-                testClassRegex = config.testClassRegex
-                testPackage = config.testPackage
-                testOutputTimeout = config.testOutputTimeout
-                testSize = config.testSize
-                excludedSerials = config.excludedSerials
-                fallbackToScreenshots = config.fallbackToScreenshots
-                totalAllowedRetryQuota = config.totalAllowedRetryQuota
-                retryPerTestCaseQuota = config.retryPerTestCaseQuota
-                isCoverageEnabled = config.isCoverageEnabled
-                poolingStrategy = config.poolingStrategy
-                autoGrantPermissions = config.autoGrantPermissions
-                ignoreFailures = config.ignoreFailures
-                excludedAnnotation = config.excludedAnnotation
-
-                applicationApk = new File(testedVariant.packageApplicationProvider.get().outputDirectory.path + "/" + testedVariantOutput.outputFileName)
-
-                String baseOutputDir = config.baseOutputDir
-                File outputBase
-                if (baseOutputDir) {
-                    outputBase = new File(baseOutputDir)
-                } else {
-                    outputBase = new File(project.buildDir, "reports/fork")
-                }
-                output = new File(outputBase, variant.name)
-
-                dependsOn testedVariant.assembleProvider, variant.assembleProvider
-
-                outputs.upToDateWhen { false }
+            String baseOutputDir = config.baseOutputDir
+            File outputBase
+            if (baseOutputDir) {
+                outputBase = new File(baseOutputDir)
+            } else {
+                outputBase = new File(project.buildDir, "reports/fork")
             }
-        }
+            output = new File(outputBase, variant.name)
 
-        return forkTask
+            dependsOn testedVariant.assembleProvider, variant.assembleProvider
+
+            outputs.upToDateWhen { false }
+        }
     }
 
     private static checkTestVariants(TestVariant testVariant) {
