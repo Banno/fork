@@ -67,6 +67,7 @@ public class DeviceTestRunner implements Runnable {
 
             TestCaseEvent testCaseEvent;
             while ((testCaseEvent = queueOfTestsInPool.poll()) != null) {
+                installer.clearApplicationData(deviceInterface);
                 TestRun testRun = testRunFactory.createTestRun(testCaseEvent,
                         device,
                         pool,

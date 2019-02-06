@@ -12,13 +12,13 @@
  */
 package com.shazam.fork.system.adb;
 
-import com.android.ddmlib.IDevice;
-import com.android.ddmlib.InstallException;
+import com.android.ddmlib.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
 
 import javax.annotation.Nonnull;
 
@@ -48,6 +48,15 @@ public class Installer {
 		reinstall(device, applicationPackage, apk);
 		reinstall(device, instrumentationPackage, testApk);
 		grantMockLocationInMarshmallow(device, applicationPackage);
+	}
+
+	public void clearApplicationData(IDevice device) {
+		try {
+			logger.debug("Clearing {} data from {}", applicationPackage, device.getSerialNumber());
+			device.executeShellCommand("pm clear " + applicationPackage, new NullOutputReceiver());
+		} catch (TimeoutException | AdbCommandRejectedException | ShellCommandUnresponsiveException | IOException e) {
+			logger.warn("Could not clear application data on device: " + device.getSerialNumber(), e);
+		}
 	}
 
 	private void reinstall(final IDevice device, final String appPackage, final File appApk) {
