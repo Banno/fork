@@ -31,7 +31,7 @@ import org.gradle.api.tasks.TaskProvider
 class ForkPlugin implements Plugin<Project> {
 
     /** Task name prefix. */
-    private static final String TASK_PREFIX = "fork"
+    private static final String TASK_PREFIX = "bork"
 
     @Override
     void apply(final Project project) {
