@@ -12,7 +12,7 @@ apply plugin: 'java'
 apply plugin: 'application'
 apply from: '../build-scripts/gradle-mvn-push.gradle'
 
-mainClassName = 'com.shazam.fork.ForkCli'
+mainClassName = 'com.banno.bork.ForkCli'
 
 sourceCompatibility = rootProject.sourceCompatibility
 targetCompatibility = rootProject.sourceCompatibility
