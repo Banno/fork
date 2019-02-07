@@ -40,7 +40,9 @@ class ForkPlugin implements Plugin<Project> {
             throw new IllegalStateException("Android plugin is not found")
         }
 
-        project.extensions.add "fork", ForkConfiguration
+        if (project.extensions.findByType(ForkConfiguration) == null) {
+            project.extensions.add "fork", ForkConfiguration
+        }
 
         def forkTask = project.tasks.register(TASK_PREFIX) {
             group = JavaBasePlugin.VERIFICATION_GROUP
