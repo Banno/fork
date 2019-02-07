@@ -12,9 +12,7 @@ ext.sourceCompatibility = JavaVersion.VERSION_1_8
 ext.targetCompatibility = JavaVersion.VERSION_1_8
 
 def repos = {
-    mavenLocal()
     google()
-    mavenCentral()
     jcenter()
 }
 
@@ -25,27 +23,4 @@ allprojects {
     repositories repos
 
     apply plugin: "java"
-    apply plugin: "jacoco"
-}
-
-subprojects {
-    afterEvaluate { project ->
-        jacocoTestReport.dependsOn test
-        jacocoTestReport.reports.html.enabled false
-        jacocoTestReport.reports.xml.enabled true
-    }
-}
-
-task jacocoMergeExecutions(type: JacocoMerge, dependsOn: getTasksByName('jacocoTestReport', true)) {
-    executionData fileTree(project.rootDir.absolutePath).include("**/build/jacoco/*.exec")
-}
-
-task jacocoMergedReport(type: JacocoReport, dependsOn: jacocoMergeExecutions) {
-    executionData jacocoMergeExecutions.destinationFile
-    sourceDirectories = files(subprojects.sourceSets.main.allSource.srcDirs)
-    classDirectories =  files(subprojects.sourceSets.main.output)
-    reports {
-        html.enabled false
-        xml.enabled true
-    }
 }

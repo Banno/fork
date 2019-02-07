@@ -31,14 +31,6 @@ dependencies {
     compile('org.lesscss:lesscss:1.7.0.1.1') {
         exclude module: 'slf4j-simple'
     }
-
-    testCompile("org.hamcrest:hamcrest-all:$HAMCREST_VERSION")
-    testCompile("junit:junit:$JUNIT_VERSION") {
-        exclude module:'hamcrest-core'
-    }
-    testCompile(
-            "org.jmock:jmock:$JMOCK_VERSION",
-            "org.jmock:jmock-junit4:$JMOCK_VERSION")
 }
 
 jar {

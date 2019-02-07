@@ -17,7 +17,6 @@ sourceCompatibility = rootProject.sourceCompatibility
 targetCompatibility = rootProject.sourceCompatibility
 
 dependencies {
-    compile project(':fork-client')
     compile(
             "com.google.code.findbugs:jsr305:3.0.1",
             "com.google.guava:guava:19.0",
@@ -30,15 +29,6 @@ dependencies {
             "org.smali:dexlib:1.4.2",
             "com.shazam:axmlparser:1.0"
     )
-
-    testCompile(
-            "org.hamcrest:hamcrest-all:$HAMCREST_VERSION",
-            "org.jmock:jmock:$JMOCK_VERSION",
-            "org.jmock:jmock-junit4:$JMOCK_VERSION",
-            "com.shazam:shazamcrest:0.11")
-    testCompile("junit:junit:$JUNIT_VERSION") {
-        exclude module:'hamcrest-core'
-    }
 }
 
 jar {
