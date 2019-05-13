@@ -1,47 +1,28 @@
-apply plugin: 'maven'
-apply plugin: 'signing'
+apply plugin: 'maven-publish'
 
-uploadArchives {
-    repositories {
-        mavenDeployer {
-            pom.groupId = project.group
-            pom.artifactId = POM_ARTIFACT_ID
-            pom.version = project.version
-
-            repository(url: 'http://nexus.banno.com/nexus/content/repositories/android-libraries') {
-                authentication(userName: System.env.NEXUS_USER, password: System.env.NEXUS_PASSWORD)
+afterEvaluate {
+    publishing {
+        repositories {
+            maven {
+                setName 'Nexus'
+                url 'http://nexus.banno.com/nexus/content/repositories/android-libraries'
+                credentials {
+                    username System.env.NEXUS_USER
+                    password System.env.NEXUS_PASSWORD
+                }
             }
+        }
 
-            snapshotRepository(url: 'http://nexus.banno.com/nexus/content/repositories/android-libraries') {
-                authentication(userName: System.env.NEXUS_USER, password: System.env.NEXUS_PASSWORD)
-            }
+        publications {
+            "$project.name"(MavenPublication) {
+                groupId project.group
+                artifactId POM_ARTIFACT_ID
+                version project.version
 
-            pom.project {
-                name POM_NAME
-                packaging POM_PACKAGING
-                description POM_DESCRIPTION
-                url POM_URL
+                from components.java
 
-                scm {
-                    url POM_SCM_URL
-                    connection POM_SCM_CONNECTION
-                    developerConnection POM_SCM_DEV_CONNECTION
-                }
-
-                licenses {
-                    license {
-                        name POM_LICENCE_NAME
-                        url POM_LICENCE_URL
-                        distribution POM_LICENCE_DIST
-                    }
-                }
-
-                developers {
-                    developer {
-                        id POM_DEVELOPER_ID
-                        name POM_DEVELOPER_NAME
-                    }
-                }
+                artifact javadocJar
+                artifact sourcesJar
             }
         }
     }
@@ -55,18 +36,4 @@ task javadocJar(type: Jar) {
 task sourcesJar(type: Jar) {
     classifier = 'sources'
     from sourceSets.main.allSource
-}
-
-artifacts {
-    archives javadocJar, sourcesJar
-}
-
-install {
-    repositories {
-        mavenInstaller {
-            pom.groupId = project.group
-            pom.artifactId = POM_ARTIFACT_ID
-            pom.version = project.version
-        }
-    }
 }
