@@ -10,6 +10,7 @@
 
 apply plugin: 'groovy'
 apply plugin: 'project-report'
+apply plugin: 'java-gradle-plugin'
 apply from: '../build-scripts/gradle-mvn-push.gradle'
 
 sourceCompatibility = rootProject.sourceCompatibility
@@ -33,4 +34,11 @@ jar {
     }
 }
 
-
+gradlePlugin {
+    plugins {
+        forkGradlePlugin {
+            id = 'com.shazam.fork'
+            implementationClass = 'com.shazam.fork.gradle.ForkPlugin'
+        }
+    }
+}
