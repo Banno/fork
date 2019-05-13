@@ -1,2 +1,2 @@
 library('android-shared')
-publishProjectAndIncrementVersion('assemble', 'uploadArchives', 'gradle.properties')
+publishProjectAndIncrementVersion('assemble', 'publish', 'gradle.properties')
