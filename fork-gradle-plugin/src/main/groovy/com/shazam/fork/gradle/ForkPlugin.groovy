@@ -36,7 +36,9 @@ class ForkPlugin implements Plugin<Project> {
     @Override
     void apply(final Project project) {
 
-        if (!project.plugins.findPlugin(AppPlugin) && !project.plugins.findPlugin(LibraryPlugin)) {
+        boolean isLibrary = project.plugins.hasPlugin(LibraryPlugin)
+
+        if (!project.plugins.hasPlugin(AppPlugin) && !isLibrary) {
             throw new IllegalStateException("Android plugin is not found")
         }
 
@@ -49,17 +51,18 @@ class ForkPlugin implements Plugin<Project> {
 
         BaseExtension android = project.android
         android.testVariants.all { TestVariant variant ->
-            def forkTaskForTestVariant = registerTask(variant, project)
+            def forkTaskForTestVariant = registerTask(variant, project, isLibrary)
             forkTask.configure {
                 dependsOn forkTaskForTestVariant
             }
         }
     }
 
-    private static TaskProvider<ForkRunTask> registerTask(final TestVariant variant, final Project project) {
+    private static TaskProvider<ForkRunTask> registerTask(final TestVariant variant, final Project project, final boolean isLibrary) {
         return project.tasks.register("${TASK_PREFIX}${variant.name.capitalize()}", ForkRunTask) {
+            def testedVariant = variant.testedVariant
+
             checkTestVariants(variant)
-            ApkVariant testedVariant = variant.testedVariant
             checkTestedVariants(testedVariant)
 
             ForkConfigurationExtension config = project.fork
@@ -67,8 +70,10 @@ class ForkPlugin implements Plugin<Project> {
             description = "Runs instrumentation tests on all the connected devices for '${variant.name}' variation and generates a report with screenshots"
             group = JavaBasePlugin.VERIFICATION_GROUP
 
-            ApkVariantOutput variantOutput = variant.outputs.asList().first()
-            instrumentationApk = new File(variant.packageApplicationProvider.get().outputDirectory.path + "/" + variantOutput.outputFileName)
+            instrumentationApk = new File(variant.packageApplicationProvider.get().outputDirectory.path + "/" + variant.outputs.asList().first().outputFileName)
+            applicationApk = isLibrary
+                    ? instrumentationApk
+                    : new File(testedVariant.packageApplicationProvider.get().outputDirectory.path + "/" + testedVariant.outputs.first().outputFileName)
 
             title = config.title
             subtitle = config.subtitle
@@ -85,9 +90,6 @@ class ForkPlugin implements Plugin<Project> {
             autoGrantPermissions = config.autoGrantPermissions
             ignoreFailures = config.ignoreFailures
             excludedAnnotation = config.excludedAnnotation
-
-            ApkVariantOutput testedVariantOutput = testedVariant.outputs.first()
-            applicationApk = new File(testedVariant.packageApplicationProvider.get().outputDirectory.path + "/" + testedVariantOutput.outputFileName)
 
             String baseOutputDir = config.baseOutputDir
             File outputBase
